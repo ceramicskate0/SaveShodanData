@@ -1,0 +1,111 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.IO;
+using System.Text.RegularExpressions;
+using Shodan;
+
+namespace Saver
+{
+    public class Saver
+    {
+        private List<DeviceNode> DataNodeList;
+        private static string LatsLongsFilePath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + "\\SearchResultsLatsLongs.csv";
+
+        public Saver(List<DeviceNode> DeviceNodeList)
+        {
+            DataNodeList = DeviceNodeList;
+        }
+
+        public Saver()
+        {
+
+        }
+
+        public static string SearchResultsLatsLongsPATH
+        {
+            get
+            {
+                if (File.Exists(LatsLongsFilePath))
+                {
+                    return LatsLongsFilePath;
+                }
+                else
+                {
+                    File.Create(LatsLongsFilePath);
+                    return LatsLongsFilePath;
+
+                }
+            }
+        }
+
+        public static void SaveAsExcel(List<DeviceNode> DataNodeList)
+        {
+            try
+            {
+                //user can save the file with desired name and location
+                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+                saveFileDialog1.Filter = "Excel CSV |*.csv";
+                saveFileDialog1.ShowDialog();
+                FileStream file = (FileStream)saveFileDialog1.OpenFile();
+                File.Create(file.ToString());
+                StreamWriter writer = new StreamWriter(file);
+                writer.WriteLine("Device Name" + "," + "SE Product" + "," + "Version" + "," + "Device Open Ports" + ","+ "Ports List"+","+ "Device IP" + "," + "Device ISP" + "," + "Device Country" + "," + "Device City" + ","+ "Zip Code" + ","+ "Area Code" + "," + "Device Latitude" + "," + "Device Longitude" + "," + "Google Maps Link"+"," +"Host Domain"+","+ "Device Score");
+                
+                for (int y = 0; y < DataNodeList.Count(); ++y)
+                {
+                    if (DataNodeList.ElementAt(y).HostPort == null)
+                    {
+                        List<string> temp = DataNodeList.ElementAt(y).HostPorts.Split('|').ToList();
+                        DataNodeList.ElementAt(y).HostPort = temp;
+                    }
+                    writer.WriteLine(DataNodeList.ElementAt(y).ProductName+" @ "+DataNodeList.ElementAt(y).HostIP + "," + DataNodeList.ElementAt(y).ProductName + "," + DataNodeList.ElementAt(y).Version + "," + DataNodeList.ElementAt(y).HostPort.ElementAt(0) + "," + DataNodeList.ElementAt(y).HostPorts + "," + DataNodeList.ElementAt(y).HostIP + "," + DataNodeList.ElementAt(y).HostISP + "," + DataNodeList.ElementAt(y).HostCountry + "," + DataNodeList.ElementAt(y).HostCity + "," + DataNodeList.ElementAt(y).Postal_Code + "," + DataNodeList.ElementAt(y).Area_Code + "," + DataNodeList.ElementAt(y).HostLatitude + "," + DataNodeList.ElementAt(y).HostLongitude + "," + "\"https://maps.google.com/maps?q=" + DataNodeList.ElementAt(y).HostLatitude + "," + DataNodeList.ElementAt(y).HostLongitude + "\"" + "," + DataNodeList.ElementAt(y).Domain + "," + DataNodeList.ElementAt(y).FindandSetAccessabilityFactor.ToString());
+                   ExcelSavePortsColum(DataNodeList, writer,y);
+                }
+                writer.Close();
+                file.Close();
+            }
+            catch
+            {
+                MessageBox.Show("Error Occurred while trying to save file.");
+            }
+        }
+
+        private static void ExcelSavePortsColum(List<DeviceNode> DataNodeList, StreamWriter writer,int y)
+        {
+                    for (int x = 1; x < DataNodeList.ElementAt(y).HostPort.Count()-1; ++x)
+                    {
+                        if (DataNodeList.ElementAt(y).HostPort.Count > 0 && String.IsNullOrEmpty(DataNodeList.ElementAt(y).HostPort.ElementAt(x))==false)
+                        {
+                            writer.WriteLine("," + "," + "," + DataNodeList.ElementAt(y).HostPort.ElementAt(x));
+                        }
+                    }
+        }
+
+        public static void WriteToCSVForGoogleMapsFromXML(List<DeviceNode> DevcieNodeList)
+        {
+            try
+            {
+                //writes a csv file to users desired name and location to later be used to populate the map on the website.
+                string FileLocation = LatsLongsFilePath;
+                StreamWriter writer = new StreamWriter(FileLocation);
+                for (int y = 0; y < DevcieNodeList.Count(); ++y)
+                {
+                    string NewRow = (y + 1) + "," + DevcieNodeList.ElementAt(y).HostLatitude + "," + DevcieNodeList.ElementAt(y).HostLongitude + "," + DevcieNodeList.ElementAt(y).HostIP.ToString() + "," + DevcieNodeList.ElementAt(y).HostName.ToString();
+                    writer.WriteLine(NewRow);
+                }
+                FileLocation = "";
+                writer.Close();
+            }
+            catch
+            {
+                MessageBox.Show("Error Occurred while trying to save file.");
+            }
+        }
+    }
+}
