@@ -1,2 +1,4 @@
-# SaveAShodanXML
-Saves as a XML for shodan data
+# SaveAs Classes that will save from shodan as diffrent file types:
+-XML
+-CSV
+-Text Files
