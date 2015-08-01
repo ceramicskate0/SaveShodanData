@@ -1,0 +1,80 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.IO;
+using System.Xml;
+using System.Xml.Serialization;
+using DeviceStructure;
+using System.Text.RegularExpressions;
+using Shodan;
+
+namespace Saver
+{
+    public class Saver
+    {
+        private List<ShodanOBJ> ShodanOBJList;
+
+        public Saver(List<ShodanOBJ> ShodanOBJList)
+        {
+            ShodanOBJList = ShodanOBJList;
+        }
+
+        public Saver()
+        {
+
+        }
+
+        public static void SaveAsXMLFile(List<ShodanOBJ> ShodanOBJList)
+        {
+            try
+            {
+                //user selects where the file is save to and the file name.
+                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+                saveFileDialog1.Filter = "Xml |*.xml";
+                saveFileDialog1.ShowDialog();
+                FileStream file = (FileStream)saveFileDialog1.OpenFile();
+                File.Create(file.ToString());
+                StreamWriter writer = new StreamWriter(file);
+
+                //writer writes info
+                writer.WriteLine(" <?xml version=" + '"' + "1.0" + '"' + "encoding=" + '"' + "UTF-8" + '"' + "?>");
+                writer.WriteLine("<shodan>");
+                writer.WriteLine("<summary date=" + '"' + DateTime.Now + '"' + ">");
+                writer.WriteLine("</summary>");
+                for (int y = 0; y < DataNodeList.Count(); ++y)
+                {
+                    writer.Write("<host" + " Host=" + '"' + ShodanOBJList.ElementAt(y).HostName + '"' + " IP=" + '"' + ShodanOBJList.ElementAt(y).HostIP + '"' + " Port=" + '"');
+                    if (ShodanOBJList.ElementAt(y).HostPort == null)
+                    {
+                        List<string> temp = ShodanOBJList.ElementAt(y).HostPorts.Split(null).ToList();
+                        ShodanOBJList.ElementAt(y).HostPort = temp;
+                    }
+                    for (int x = 0; x < ShodanOBJList.ElementAt(y).HostPort.Count() - 1; ++x)
+                    {
+                        writer.Write(ShodanOBJList.ElementAt(y).HostPort.ElementAt(x).ToString() + ",");
+                        if (x == ShodanOBJList.ElementAt(y).HostPort.Count() - 2)
+                        {
+                            writer.Write(ShodanOBJList.ElementAt(y).HostPort.ElementAt(x).ToString());
+                        }
+                    }
+                    writer.Write('"' + " Country=" + '"' + ShodanOBJList.ElementAt(y).HostCountry + '"' + " City=" + '"' + ShodanOBJList.ElementAt(y).HostCity + '"' + " Latitude=" + '"' + ShodanOBJList.ElementAt(y).HostLatitude + '"' + " Longitude=" + '"' + ShodanOBJList.ElementAt(y).HostLongitude + '"' + " ISP=" + '"' + ShodanOBJList.ElementAt(y).HostISP + '"' + ">");
+                    writer.WriteLine();
+                    writer.WriteLine("<data>" + ShodanOBJList.ElementAt(y).DataBlock + "</data>");
+                    writer.WriteLine("</host>");
+                }
+                writer.WriteLine("</shodan>");
+                writer.Close();
+                file.Close();
+            }
+            catch
+            {
+                MessageBox.Show("Error Occurred while trying to save file.");
+            }
+        }
+    }
+}
