@@ -1,0 +1,70 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.IO;
+using System.Text.RegularExpressions;
+using Shodan;
+
+namespace Saver
+{//Created & Written By:Payton Garrard & Brooke Ray
+    public class Saver
+    {
+        private List<DeviceNode> DataNodeList;
+
+        public Saver(List<DeviceNode> DeviceNodeList)
+        {
+            DataNodeList = DeviceNodeList;
+        }
+
+        public Saver()
+        {
+
+        }
+        public static void SaveAsTextFile(List<DeviceNode> DataNodeList)
+        {
+            try
+            {
+                //use to can save text file with desired name and location.
+                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+                saveFileDialog1.Filter = "Text |*.txt";
+                saveFileDialog1.ShowDialog();
+                FileStream file = (FileStream)saveFileDialog1.OpenFile();
+                File.Create(file.ToString());
+                StreamWriter writer = new StreamWriter(file);
+
+                //writes the information in the correct format to the txt file
+                writer.WriteLine("Data Collected on: " + DateTime.Now + "----------------------------------------------------");
+                for (int y = 0; y < DataNodeList.Count(); ++y)
+                {
+                    writer.WriteLine(y + 1 + ") " + DataNodeList.ElementAt(y).HostName);
+                    try
+                    {
+                        if (DataNodeList.ElementAt(y).DataBlock.ToString().Length == 0 || DataNodeList.ElementAt(y).DataBlock == null)
+                        {
+                            writer.WriteLine("NO USEABLE/VALID DATA TO DISPLAY");
+                        }
+                        else
+                            writer.WriteLine("* " + DataNodeList.ElementAt(y).DataBlock);
+                        writer.WriteLine("--------------------------------------------------------------------------");
+                    }
+
+                    catch
+                    {
+                        writer.WriteLine("-----NO USEABLE/VALID DATA TO DISPLAY-----");
+                    }
+                }
+                writer.Close();
+                file.Close();
+            }
+            catch
+            {
+                MessageBox.Show("Error Occurred while trying to save file.");
+            }
+        }
+    }
+}
