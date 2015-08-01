@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using Shodan;
 
 namespace Saver
-{//Created & Written By:Payton Garrard & Brooke Ray
+{
     public class Saver
     {
         private List<DeviceNode> DataNodeList;
